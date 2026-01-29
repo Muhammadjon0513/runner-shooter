@@ -18,9 +18,17 @@ public class PlayerController : MonoBehaviour
     public float fireRate = 0.2f;
     private float nextFireTime = 0f;
 
+    private Rigidbody rb;
+
     private void Start()
     {
         currentSpeed = forwardSpeed;
+        
+        rb = GetComponent<Rigidbody>();
+        if (rb != null)
+        {
+            rb.isKinematic = true; // Fixes jitter by disabling physics forces affecting transform
+        }
     }
 
     private void Update()

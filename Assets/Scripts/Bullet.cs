@@ -5,20 +5,27 @@ public class Bullet : MonoBehaviour
     public float speed = 20f;
     public int damage = 1;
 
+    public float lifeTime = 3f;
+
     private void OnEnable()
     {
-        // Reset any state if needed
+        // Disable after lifeTime seconds
+        Invoke("Deactivate", lifeTime);
+    }
+
+    private void Deactivate()
+    {
+        gameObject.SetActive(false);
+    }
+
+    private void OnDisable()
+    {
+        CancelInvoke();
     }
 
     private void Update()
     {
         transform.Translate(Vector3.forward * speed * Time.deltaTime);
-
-        // Optional: Disable if too far away to clean up if not pooled/destroyed
-        if (transform.position.z > 1000f) // Arbitrary safety net
-        {
-            gameObject.SetActive(false);
-        }
     }
 
     private void OnTriggerEnter(Collider other)
