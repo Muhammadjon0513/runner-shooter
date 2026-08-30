@@ -1,3 +1,4 @@
+using System.Collections;
 using UnityEngine;
 
 public class Bullet : MonoBehaviour
@@ -7,20 +8,28 @@ public class Bullet : MonoBehaviour
 
     public float lifeTime = 3f;
 
+    // BUG-6 Fix: Coroutine reference — xavfsiz to'xtatish uchun
+    private Coroutine deactivateCoroutine;
+
     private void OnEnable()
     {
-        // Disable after lifeTime seconds
-        Invoke("Deactivate", lifeTime);
+        // BUG-6 Fix: Invoke o'rniga Coroutine — kompilyator xatoni ushlay oladi
+        deactivateCoroutine = StartCoroutine(DeactivateAfterTime());
     }
 
-    private void Deactivate()
+    private IEnumerator DeactivateAfterTime()
     {
+        yield return new WaitForSeconds(lifeTime);
         gameObject.SetActive(false);
     }
 
     private void OnDisable()
     {
-        CancelInvoke();
+        if (deactivateCoroutine != null)
+        {
+            StopCoroutine(deactivateCoroutine);
+            deactivateCoroutine = null;
+        }
     }
 
     private void Update()

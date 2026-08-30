@@ -18,7 +18,15 @@ public class ObjectPooler : MonoBehaviour
 
     private void Awake()
     {
-        Instance = this;
+        // BUG-5 Fix: Singleton himoyasi (GameManager kabi)
+        if (Instance == null)
+            Instance = this;
+        else
+        {
+            Destroy(gameObject);
+            return;
+        }
+
         InitializePools();
     }
 
@@ -49,14 +57,35 @@ public class ObjectPooler : MonoBehaviour
             return null;
         }
 
-        GameObject objectToSpawn = poolDictionary[tag].Dequeue();
+        Queue<GameObject> queue = poolDictionary[tag];
 
-        objectToSpawn.SetActive(true);
-        objectToSpawn.transform.position = position;
-        objectToSpawn.transform.rotation = rotation;
+        // BUG-1 Fix: Faol bo'lmagan obyektni qidirish
+        for (int i = 0; i < queue.Count; i++)
+        {
+            GameObject obj = queue.Dequeue();
+            if (!obj.activeInHierarchy)
+            {
+                obj.SetActive(true);
+                obj.transform.position = position;
+                obj.transform.rotation = rotation;
+                queue.Enqueue(obj);
+                return obj;
+            }
+            queue.Enqueue(obj); // Faol — qaytarib qo'y
+        }
 
-        poolDictionary[tag].Enqueue(objectToSpawn);
+        // Pool tugagan — yangi obyekt yarat (auto-expand)
+        Pool poolInfo = pools.Find(p => p.tag == tag);
+        if (poolInfo != null)
+        {
+            GameObject newObj = Instantiate(poolInfo.prefab);
+            newObj.transform.position = position;
+            newObj.transform.rotation = rotation;
+            queue.Enqueue(newObj);
+            return newObj;
+        }
 
-        return objectToSpawn;
+        Debug.LogWarning("Pool with tag " + tag + " is exhausted and has no prefab to expand.");
+        return null;
     }
 }

@@ -12,6 +12,10 @@ public class Obstacle : MonoBehaviour
     private Color originalColor;
     public Color damageColor = Color.red;
     public float flashDuration = 0.1f;
+
+    // BUG-3 Fix: MaterialPropertyBlock — xotira tejash
+    private MaterialPropertyBlock propBlock;
+    private static readonly int ColorID = Shader.PropertyToID("_Color");
     
     // UI (Optional: Floating text for health?)
     public TextMeshProUGUI textMesh; 
@@ -19,8 +23,9 @@ public class Obstacle : MonoBehaviour
     private void Awake()
     {
         meshRenderer = GetComponent<MeshRenderer>();
+        propBlock = new MaterialPropertyBlock();
         if (meshRenderer != null)
-            originalColor = meshRenderer.material.color;
+            originalColor = meshRenderer.sharedMaterial.color;
     }
 
     private void OnEnable()
@@ -33,7 +38,10 @@ public class Obstacle : MonoBehaviour
         
         // Reset color in case it was pooled while red
         if (meshRenderer != null)
-            meshRenderer.material.color = originalColor;
+        {
+            propBlock.SetColor(ColorID, originalColor);
+            meshRenderer.SetPropertyBlock(propBlock);
+        }
             
         // Reset scale/position just in case
         transform.localScale = Vector3.one; 
@@ -49,19 +57,26 @@ public class Obstacle : MonoBehaviour
         transform.DOKill(true); // Kill previous tweens
         transform.DOPunchPosition(new Vector3(0, 0.5f, 0), 0.2f, 5, 1);
         
-        // 2. Flash Red
+        // 2. Flash Red (BUG-3 Fix: MaterialPropertyBlock orqali)
         if (meshRenderer != null)
         {
-            meshRenderer.material.DOColor(damageColor, 0.05f).OnComplete(() =>
-            {
-                meshRenderer.material.DOColor(originalColor, 0.05f);
-            });
+            StopAllCoroutines();
+            StartCoroutine(FlashColor());
         }
 
         if (currentHealth <= 0)
         {
             Die();
         }
+    }
+
+    private System.Collections.IEnumerator FlashColor()
+    {
+        propBlock.SetColor(ColorID, damageColor);
+        meshRenderer.SetPropertyBlock(propBlock);
+        yield return new WaitForSeconds(0.05f);
+        propBlock.SetColor(ColorID, originalColor);
+        meshRenderer.SetPropertyBlock(propBlock);
     }
 
     private void Die()
@@ -88,5 +103,12 @@ public class Obstacle : MonoBehaviour
         {
             textMesh.text = currentHealth.ToString();
         }
+    }
+
+    // BUG-2 Fix: Pool'ga qaytganda barcha tweenlar va coroutinelarni to'xtatish
+    private void OnDisable()
+    {
+        transform.DOKill();
+        StopAllCoroutines();
     }
 }
