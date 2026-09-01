@@ -8,6 +8,9 @@ TagManager:
   - Obstacle
   - Ground
   - PowerUp
+  - Shield
+  - SpeedBoost
+  - DoubleCoin
   layers:
   - Default
   - TransparentFX

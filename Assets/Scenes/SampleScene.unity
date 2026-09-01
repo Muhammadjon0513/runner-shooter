@@ -122,6 +122,103 @@ NavMeshSettings:
     debug:
       m_Flags: 0
   m_NavMeshData: {fileID: 0}
+--- !u!1 &8527346
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 8527348}
+  - component: {fileID: 8527347}
+  m_Layer: 0
+  m_Name: UpgradeManager
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!114 &8527347
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8527346}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 5d6d91016410d784ba47c03cf5dd1dd4, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  upgrades:
+  - id: damage
+    displayName: Damage
+    maxLevel: 5
+    basePrice: 100
+    priceMultiplier: 2
+    values:
+    - 1
+    - 1
+    - 2
+    - 2
+    - 3
+    - 3
+    currentLevel: 0
+  - id: fireRate
+    displayName: Fire Rate
+    maxLevel: 5
+    basePrice: 100
+    priceMultiplier: 2
+    values:
+    - 0.2
+    - 0.16
+    - 0.14
+    - 0.12
+    - 0.1
+    - 0.08
+    currentLevel: 0
+  - id: speed
+    displayName: Speed
+    maxLevel: 5
+    basePrice: 50
+    priceMultiplier: 2
+    values:
+    - 10
+    - 11
+    - 12
+    - 13
+    - 14
+    - 16
+    currentLevel: 0
+  - id: coinBonus
+    displayName: Coin Bonus
+    maxLevel: 5
+    basePrice: 100
+    priceMultiplier: 2
+    values:
+    - 1
+    - 1.2
+    - 1.4
+    - 1.6
+    - 1.8
+    - 2
+    currentLevel: 0
+--- !u!4 &8527348
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8527346}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: -2.0153809, y: 0.46529245, z: 2.6258502}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &145885217
 GameObject:
   m_ObjectHideFlags: 0
@@ -254,8 +351,15 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 48ac4b426e919974e9c8202fe7e0d955, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  Coins: 0
+  TotalCoins: 0
+  SessionCoins: 0
+  Score: 0
+  BestScore: 0
+  difficultyMultiplier: 1
+  difficultyIncreaseInterval: 30
+  difficultyIncreaseAmount: 0.1
   coinText: {fileID: 1573848762}
+  scoreText: {fileID: 1573848762}
 --- !u!4 &184141382
 Transform:
   m_ObjectHideFlags: 0
@@ -536,6 +640,111 @@ Transform:
   m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!1 &653843086
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 653843087}
+  - component: {fileID: 653843090}
+  - component: {fileID: 653843089}
+  - component: {fileID: 653843088}
+  m_Layer: 0
+  m_Name: shield
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 0
+--- !u!4 &653843087
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 653843086}
+  serializedVersion: 2
+  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
+  m_LocalPosition: {x: 0, y: -0.67999995, z: 0.12}
+  m_LocalScale: {x: 3, y: 3, z: 3}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 5067032982223483163}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!135 &653843088
+SphereCollider:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 653843086}
+  m_Material: {fileID: 0}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_LayerOverridePriority: 0
+  m_IsTrigger: 0
+  m_ProvidesContacts: 0
+  m_Enabled: 1
+  serializedVersion: 3
+  m_Radius: 0.5
+  m_Center: {x: 0, y: 0, z: 0}
+--- !u!23 &653843089
+MeshRenderer:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 653843086}
+  m_Enabled: 1
+  m_CastShadows: 1
+  m_ReceiveShadows: 1
+  m_DynamicOccludee: 1
+  m_StaticShadowCaster: 0
+  m_MotionVectors: 1
+  m_LightProbeUsage: 1
+  m_ReflectionProbeUsage: 1
+  m_RayTracingMode: 2
+  m_RayTraceProcedural: 0
+  m_RenderingLayerMask: 1
+  m_RendererPriority: 0
+  m_Materials:
+  - {fileID: 2100000, guid: 5bb66b92998c58b449cf07b6b41e5c46, type: 2}
+  m_StaticBatchInfo:
+    firstSubMesh: 0
+    subMeshCount: 0
+  m_StaticBatchRoot: {fileID: 0}
+  m_ProbeAnchor: {fileID: 0}
+  m_LightProbeVolumeOverride: {fileID: 0}
+  m_ScaleInLightmap: 1
+  m_ReceiveGI: 1
+  m_PreserveUVs: 0
+  m_IgnoreNormalsForChartDetection: 0
+  m_ImportantGI: 0
+  m_StitchLightmapSeams: 1
+  m_SelectedEditorRenderState: 3
+  m_MinimumChartSize: 4
+  m_AutoUVMaxDistance: 0.5
+  m_AutoUVMaxAngle: 89
+  m_LightmapParameters: {fileID: 0}
+  m_SortingLayerID: 0
+  m_SortingLayer: 0
+  m_SortingOrder: 0
+  m_AdditionalVertexStreams: {fileID: 0}
+--- !u!33 &653843090
+MeshFilter:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 653843086}
+  m_Mesh: {fileID: 10207, guid: 0000000000000000e000000000000000, type: 0}
 --- !u!1 &705507993
 GameObject:
   m_ObjectHideFlags: 0
@@ -663,6 +872,7 @@ MonoBehaviour:
   spawnDistance: 10
   groundLength: 15
   obstacleSpawnChance: 1
+  powerUpInterval: 5
 --- !u!4 &791080928
 Transform:
   m_ObjectHideFlags: 0
@@ -717,6 +927,15 @@ MonoBehaviour:
   - tag: Obstacle
     prefab: {fileID: 1559729916603634343, guid: 26c9a2c71fd8c494281aa2a60cae2f1c, type: 3}
     size: 30
+  - tag: Shield
+    prefab: {fileID: 1318351374494185463, guid: a2fca11a1df713e4088fc278f6d4bd99, type: 3}
+    size: 5
+  - tag: SpeedBoost
+    prefab: {fileID: 3629865530123601913, guid: fdd22d405dbd480439e44e45ac1eabf0, type: 3}
+    size: 5
+  - tag: DoubleCoin
+    prefab: {fileID: 7246871454920623511, guid: 1d7a2c206a456f74cbe7da5ea32bc3ac, type: 3}
+    size: 5
 --- !u!4 &927799832
 Transform:
   m_ObjectHideFlags: 0
@@ -839,7 +1058,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   target: {fileID: 5067032982223483163}
   offset: {x: 0, y: 10, z: -8}
-  smoothSpeed: 0.125
+  smoothTime: 0.15
 --- !u!1 &1019725404
 GameObject:
   m_ObjectHideFlags: 0
@@ -1069,6 +1288,10 @@ PrefabInstance:
       propertyPath: m_Name
       value: tank
       objectReference: {fileID: 0}
+    - target: {fileID: 4074389121387581835, guid: abb1f36880967f74a82e7188b6469db0, type: 3}
+      propertyPath: m_TagString
+      value: Player
+      objectReference: {fileID: 0}
     - target: {fileID: 7683895824994862181, guid: abb1f36880967f74a82e7188b6469db0, type: 3}
       propertyPath: m_LocalPosition.x
       value: 0
@@ -1111,7 +1334,10 @@ PrefabInstance:
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
-    m_AddedGameObjects: []
+    m_AddedGameObjects:
+    - targetCorrespondingSourceObject: {fileID: 7683895824994862181, guid: abb1f36880967f74a82e7188b6469db0, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 653843087}
     m_AddedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: abb1f36880967f74a82e7188b6469db0, type: 3}
 --- !u!4 &5067032982223483163 stripped
@@ -1131,3 +1357,4 @@ SceneRoots:
   - {fileID: 927799832}
   - {fileID: 593060048}
   - {fileID: 145885221}
+  - {fileID: 8527348}
