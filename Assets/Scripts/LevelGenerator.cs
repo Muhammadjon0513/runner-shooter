@@ -15,6 +15,27 @@ public class LevelGenerator : MonoBehaviour
     [Header("Obstacle Settings")]
     [Range(0f, 1f)] public float obstacleSpawnChance = 0.5f;
 
+    [Header("Power-Up Settings")]
+    [Range(3, 8)] public int powerUpInterval = 5;  // Har nechta segmentda 1 ta power-up
+    private int segmentsSinceLastPowerUp = 0;
+
+    // To'siq joylashuvi pattern'lari — KAMIDA 1 LANE DOIM BO'SH
+    private static readonly int[][] obstaclePatterns = new int[][]
+    {
+        new int[] { 1, 0, 0 },  // Faqat chap
+        new int[] { 0, 1, 0 },  // Faqat o'rta
+        new int[] { 0, 0, 1 },  // Faqat o'ng
+        new int[] { 1, 1, 0 },  // Chap + O'rta
+        new int[] { 1, 0, 1 },  // Chap + O'ng
+        new int[] { 0, 1, 1 },  // O'rta + O'ng
+    };
+
+    // Lane X pozitsiyalari
+    private static readonly float[] laneX = { -1.5f, 0f, 1.5f };
+
+    // Power-up turlari (ObjectPooler tag'lari bilan mos)
+    private static readonly string[] powerUpTags = { "Shield", "SpeedBoost", "DoubleCoin" };
+
     private void Start()
     {
         // Initial set of grounds
@@ -27,11 +48,6 @@ public class LevelGenerator : MonoBehaviour
     private void Update()
     {
         // Check if player moved far enough to spawn new ground
-        // We delete ground behind the player
-        
-        // Assuming the player starts at 0, and grounds are 10m long.
-        // If player is at Z=20, we probably don't need the ground at Z=0 anymore.
-        
         if (playerTransform.position.z - 15 > (activeGrounds[0].transform.position.z + groundLength / 2))
         {
             RecycleGround();
@@ -43,10 +59,8 @@ public class LevelGenerator : MonoBehaviour
         // 1. Get ground from pool
         GameObject ground = ObjectPooler.Instance.SpawnFromPool("Ground", Vector3.forward * lastGroundZ, Quaternion.identity);
         
-        // 2. Randomly spawn obstacles on this ground 
-        // We don't spawn on the VERY first ground usually (to give player start time), 
-        // but for simplicity let's just use strict logic:
-        if (lastGroundZ > 10) // Skip first couple segments
+        // 2. Spawn obstacles (skip first couple segments for start zone)
+        if (lastGroundZ > 10)
         {
             SpawnObstacles(ground.transform);
         }
@@ -67,35 +81,58 @@ public class LevelGenerator : MonoBehaviour
 
     private void SpawnObstacles(Transform parentGround)
     {
-        // User requested: "obstacles should be spawned in the same z position"
-        // This implies a ROW of obstacles.
-        // Lanes are X: -1.5, 0, 1.5.
-        
-        if (Random.value > obstacleSpawnChance) return; // Sometimes empty ground
+        // Difficulty ga qarab spawn ehtimolini oshirish
+        float adjustedChance = obstacleSpawnChance;
+        if (GameManager.Instance != null)
+            adjustedChance = Mathf.Min(0.9f, obstacleSpawnChance * GameManager.Instance.difficultyMultiplier);
 
-        // Pick a random configuration of the 3 lanes.
-        // e.g. [1, 0, 1] means Left and Right have obstacles.
-        // [1, 1, 1] means wall (impossible? maybe destroyable)
-        
-        // Let's spawn 1 to 3 obstacles in a row at the center of the ground segment (Z offset)
-        float zOffset = 0; // Center of the 10 unit long ground relative to its pivot? 
-                           // If pivot is center, zOffset 0 is fine.
-                           
-        // Lanes
-        float[] laneX = { -1.5f, 0f, 1.5f };
-        
-        // Decision: Spawn row.
-        foreach (float x in laneX)
+        if (Random.value > adjustedChance) return; // Sometimes empty ground
+
+        // Pattern-based spawn — kamida 1 lane doim bo'sh
+        int patternIndex = Random.Range(0, obstaclePatterns.Length);
+        int[] pattern = obstaclePatterns[patternIndex];
+
+        float zOffset = 0f;
+
+        // Bo'sh lane'larni kuzatish (power-up joylash uchun)
+        List<int> emptyLanes = new List<int>();
+
+        for (int i = 0; i < 3; i++)
         {
-            // 70% chance to spawn in a given slot? Or explicit patterns?
-            // "so now the tank moves forward... automatic"
-            // Let's just randomize each lane independently for now
-            if (Random.value > 0.3f) 
+            if (pattern[i] == 1)
             {
-                Vector3 spawnPos = new Vector3(x, 0.8f, parentGround.position.z + zOffset);
-                // Note: We spawn in WORLD space, but aligned with ground Z.
+                Vector3 spawnPos = new Vector3(laneX[i], 0.8f, parentGround.position.z + zOffset);
                 ObjectPooler.Instance.SpawnFromPool("Obstacle", spawnPos, Quaternion.identity);
             }
+            else
+            {
+                emptyLanes.Add(i);
+            }
+        }
+
+        // Power-up spawn — har N ta segmentda 1 ta
+        segmentsSinceLastPowerUp++;
+        if (segmentsSinceLastPowerUp >= powerUpInterval && emptyLanes.Count > 0)
+        {
+            SpawnPowerUp(parentGround, emptyLanes, zOffset);
+            segmentsSinceLastPowerUp = 0;
+        }
+    }
+
+    private void SpawnPowerUp(Transform parentGround, List<int> emptyLanes, float zOffset)
+    {
+        // Tasodifiy bo'sh lane'ni tanlash
+        int laneIndex = emptyLanes[Random.Range(0, emptyLanes.Count)];
+        
+        // Tasodifiy power-up turini tanlash
+        string powerUpTag = powerUpTags[Random.Range(0, powerUpTags.Length)];
+        
+        Vector3 spawnPos = new Vector3(laneX[laneIndex], 1.0f, parentGround.position.z + zOffset);
+        
+        GameObject powerUp = ObjectPooler.Instance.SpawnFromPool(powerUpTag, spawnPos, Quaternion.identity);
+        if (powerUp == null)
+        {
+            Debug.LogWarning($"Power-up pool '{powerUpTag}' topilmadi yoki bo'sh. ObjectPooler'ga qo'shing!");
         }
     }
 }

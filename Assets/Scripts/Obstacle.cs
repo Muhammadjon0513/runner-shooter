@@ -6,6 +6,7 @@ public class Obstacle : MonoBehaviour
 {
     public int maxHealth = 10;
     private int currentHealth;
+    private int coinValue; // To'siq yo'q qilinganda beriladigan coin (= maxHealth)
     
     // Visuals
     private MeshRenderer meshRenderer;
@@ -34,6 +35,12 @@ public class Obstacle : MonoBehaviour
         // User said 1-5.
         maxHealth = Random.Range(1, 6); 
         currentHealth = maxHealth;
+
+        // Coin qiymati = HP × coinBonus multiplier
+        float coinMultiplier = 1f;
+        if (UpgradeManager.Instance != null)
+            coinMultiplier = UpgradeManager.Instance.GetValue("coinBonus");
+        coinValue = Mathf.RoundToInt(maxHealth * coinMultiplier);
         UpdateVisuals();
         
         // Reset color in case it was pooled while red
@@ -84,8 +91,15 @@ public class Obstacle : MonoBehaviour
         // Add coins
         if (GameManager.Instance != null)
         {
-            GameManager.Instance.AddCoin(1); // 1 coin per obstacle
-            Debug.Log($"Coin added! Total: {GameManager.Instance.Coins}");
+            int finalCoinValue = coinValue;
+
+            // DoubleCoin power-up tekshirish
+            PlayerController player = FindObjectOfType<PlayerController>();
+            if (player != null && player.HasDoubleCoin)
+                finalCoinValue *= 2;
+
+            GameManager.Instance.AddCoin(finalCoinValue);
+            Debug.Log($"Coin added: +{finalCoinValue}! Total: {GameManager.Instance.TotalCoins}");
         }
         else
         {

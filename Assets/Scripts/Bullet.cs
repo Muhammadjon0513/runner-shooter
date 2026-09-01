@@ -13,6 +13,10 @@ public class Bullet : MonoBehaviour
 
     private void OnEnable()
     {
+        // Upgrade'dan damage olish
+        if (UpgradeManager.Instance != null)
+            damage = (int)UpgradeManager.Instance.GetValue("damage");
+
         // BUG-6 Fix: Invoke o'rniga Coroutine — kompilyator xatoni ushlay oladi
         deactivateCoroutine = StartCoroutine(DeactivateAfterTime());
     }

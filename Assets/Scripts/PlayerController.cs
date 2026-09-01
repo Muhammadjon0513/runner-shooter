@@ -1,3 +1,4 @@
+using System.Collections;
 using UnityEngine;
 using DG.Tweening;
 
@@ -20,9 +21,28 @@ public class PlayerController : MonoBehaviour
 
     private Rigidbody rb;
 
+    [Header("Power-Up States")]
+    private bool hasShield = false;
+    private bool hasSpeedBoost = false;
+    private bool hasDoubleCoin = false;
+    private float baseForwardSpeed; // Speed boost uchun asl tezlik
+
+    [Header("Swipe Settings")]
+    private Vector2 touchStartPos;
+    private float swipeThreshold = 50f; // Minimal swipe masofa (piksel)
+    private bool isSwiping = false;
+
     private void Start()
     {
+        // Upgrade'dan qiymatlarni olish
+        if (UpgradeManager.Instance != null)
+        {
+            forwardSpeed = UpgradeManager.Instance.GetValue("speed");
+            fireRate = UpgradeManager.Instance.GetValue("fireRate");
+        }
+
         currentSpeed = forwardSpeed;
+        baseForwardSpeed = forwardSpeed; // Speed boost uchun asl tezlik
         
         rb = GetComponent<Rigidbody>();
         if (rb != null)
@@ -89,14 +109,46 @@ public class PlayerController : MonoBehaviour
             ChangeLane(1);
         }
 
-        // Mouse / Touch (Simple left/right side of screen center)
-        if (Input.GetMouseButtonDown(0))
+        // Swipe detection (mobil uchun)
+        if (Input.touchCount > 0)
+        {
+            Touch touch = Input.GetTouch(0);
+            
+            switch (touch.phase)
+            {
+                case TouchPhase.Began:
+                    touchStartPos = touch.position;
+                    isSwiping = true;
+                    break;
+                    
+                case TouchPhase.Ended:
+                    if (isSwiping)
+                    {
+                        Vector2 swipeDelta = touch.position - touchStartPos;
+                        if (Mathf.Abs(swipeDelta.x) > swipeThreshold)
+                        {
+                            ChangeLane(swipeDelta.x > 0 ? 1 : -1);
+                        }
+                        isSwiping = false;
+                    }
+                    break;
+                    
+                case TouchPhase.Canceled:
+                    isSwiping = false;
+                    break;
+            }
+        }
+
+        // Mouse fallback (Editor'da test uchun — faqat touch yo'q bo'lganda)
+        #if UNITY_EDITOR
+        if (Input.touchCount == 0 && Input.GetMouseButtonDown(0))
         {
             if (Input.mousePosition.x < Screen.width / 2)
                 ChangeLane(-1);
             else
                 ChangeLane(1);
         }
+        #endif
     }
 
     private void ChangeLane(int direction)
@@ -128,7 +180,77 @@ public class PlayerController : MonoBehaviour
     {
         if (other.CompareTag("Obstacle"))
         {
-            GameManager.Instance.GameOver();
+            if (hasShield)
+            {
+                hasShield = false; // Shield yeyiladi
+                // To'siqni yo'q qilish
+                Obstacle obstacle = other.GetComponent<Obstacle>();
+                if (obstacle != null)
+                    obstacle.TakeDamage(999); // Shield bilan to'siqni darhol buzish
+                Debug.Log("Shield ishlatildi!");
+            }
+            else
+            {
+                GameManager.Instance.GameOver();
+            }
         }
     }
+
+    // === POWER-UP TIZIMI ===
+
+    /// <summary>
+    /// Power-up ni faollashtirish
+    /// </summary>
+    public void ActivatePowerUp(PowerUpType type)
+    {
+        switch (type)
+        {
+            case PowerUpType.Shield:
+                StopCoroutine(nameof(ShieldRoutine)); // Agar oldingi davom etayotgan bo'lsa
+                StartCoroutine(ShieldRoutine(5f));
+                Debug.Log("🛡️ Shield faollashtirildi!");
+                break;
+            case PowerUpType.SpeedBoost:
+                StopCoroutine(nameof(SpeedBoostRoutine));
+                StartCoroutine(SpeedBoostRoutine(4f));
+                Debug.Log("⚡ Speed Boost faollashtirildi!");
+                break;
+            case PowerUpType.DoubleCoin:
+                StopCoroutine(nameof(DoubleCoinRoutine));
+                StartCoroutine(DoubleCoinRoutine(8f));
+                Debug.Log("💰 Double Coin faollashtirildi!");
+                break;
+        }
+    }
+
+    private IEnumerator ShieldRoutine(float duration)
+    {
+        hasShield = true;
+        yield return new WaitForSeconds(duration);
+        hasShield = false;
+        Debug.Log("🛡️ Shield tugadi!");
+    }
+
+    private IEnumerator SpeedBoostRoutine(float duration)
+    {
+        hasSpeedBoost = true;
+        forwardSpeed = baseForwardSpeed * 2f; // 2x tezlik
+        yield return new WaitForSeconds(duration);
+        forwardSpeed = baseForwardSpeed;
+        hasSpeedBoost = false;
+        Debug.Log("⚡ Speed Boost tugadi!");
+    }
+
+    private IEnumerator DoubleCoinRoutine(float duration)
+    {
+        hasDoubleCoin = true;
+        yield return new WaitForSeconds(duration);
+        hasDoubleCoin = false;
+        Debug.Log("💰 Double Coin tugadi!");
+    }
+
+    /// <summary>
+    /// Obstacle.cs da DoubleCoin holatini tekshirish uchun
+    /// </summary>
+    public bool HasDoubleCoin => hasDoubleCoin;
 }
