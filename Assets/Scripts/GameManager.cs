@@ -60,6 +60,8 @@ public class GameManager : MonoBehaviour
             Score = Mathf.FloorToInt(playerTransform.position.z);
             if (scoreText != null)
                 scoreText.text = Score.ToString();
+            if (HUDManager.Instance != null)
+                HUDManager.Instance.UpdateScoreDisplay(Score);
         }
 
         // Difficulty scaling — har 30 sekundda 10% oshadi
@@ -76,6 +78,10 @@ public class GameManager : MonoBehaviour
         SessionCoins += amount;
         TotalCoins += amount;
         UpdateUI();
+
+        // HUD popup va counter
+        if (HUDManager.Instance != null)
+            HUDManager.Instance.UpdateCoinDisplay(TotalCoins);
     }
 
     private void UpdateUI()
@@ -107,7 +113,8 @@ public class GameManager : MonoBehaviour
         Debug.Log($"Game Over! Score: {Score}, Coins: {SessionCoins}");
 
         // Eng yuqori natijani yangilash
-        if (Score > BestScore)
+        bool isNewRecord = Score > BestScore;
+        if (isNewRecord)
         {
             BestScore = Score;
             Debug.Log($"New Best Score: {BestScore}");
@@ -115,9 +122,21 @@ public class GameManager : MonoBehaviour
 
         SaveData();
 
-        // TODO: GameOver UI panel ko'rsatish (keyingi bosqichda)
-        UnityEngine.SceneManagement.SceneManager.LoadScene(
-            UnityEngine.SceneManagement.SceneManager.GetActiveScene().name);
+        // Power-up inventarni tozalash
+        if (PowerUpInventory.Instance != null)
+            PowerUpInventory.Instance.ClearInventory();
+
+        // GameOver UI panelini ko'rsatish
+        if (GameOverUI.Instance != null)
+        {
+            GameOverUI.Instance.ShowGameOver(Score, SessionCoins, BestScore, isNewRecord);
+        }
+        else
+        {
+            // Fallback — agar UI yo'q bo'lsa darhol restart
+            UnityEngine.SceneManagement.SceneManager.LoadScene(
+                UnityEngine.SceneManagement.SceneManager.GetActiveScene().name);
+        }
     }
 
     // --- PlayerPrefs bilan saqlash/yuklash ---

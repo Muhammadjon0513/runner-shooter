@@ -99,7 +99,10 @@ public class Obstacle : MonoBehaviour
                 finalCoinValue *= 2;
 
             GameManager.Instance.AddCoin(finalCoinValue);
-            Debug.Log($"Coin added: +{finalCoinValue}! Total: {GameManager.Instance.TotalCoins}");
+
+            // Coin popup animatsiya
+            if (HUDManager.Instance != null)
+                HUDManager.Instance.ShowCoinPopup(finalCoinValue, transform.position);
         }
         else
         {

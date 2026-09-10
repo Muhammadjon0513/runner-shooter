@@ -1,3 +1,4 @@
+using System;
 using System.Collections;
 using UnityEngine;
 using DG.Tweening;
@@ -32,6 +33,9 @@ public class PlayerController : MonoBehaviour
     private float swipeThreshold = 50f; // Minimal swipe masofa (piksel)
     private bool isSwiping = false;
 
+    // Power-up event'lari — HUD uchun
+    public event Action<PowerUpType, float> OnPowerUpActivated;  // tur, davomiylik
+    public event Action<PowerUpType> OnPowerUpExpired;            // tur
     private void Start()
     {
         // Upgrade'dan qiymatlarni olish
@@ -226,31 +230,33 @@ public class PlayerController : MonoBehaviour
     private IEnumerator ShieldRoutine(float duration)
     {
         hasShield = true;
+        OnPowerUpActivated?.Invoke(PowerUpType.Shield, duration);
         yield return new WaitForSeconds(duration);
         hasShield = false;
-        Debug.Log("🛡️ Shield tugadi!");
+        OnPowerUpExpired?.Invoke(PowerUpType.Shield);
     }
 
     private IEnumerator SpeedBoostRoutine(float duration)
     {
         hasSpeedBoost = true;
-        forwardSpeed = baseForwardSpeed * 2f; // 2x tezlik
+        forwardSpeed = baseForwardSpeed * 2f;
+        OnPowerUpActivated?.Invoke(PowerUpType.SpeedBoost, duration);
         yield return new WaitForSeconds(duration);
         forwardSpeed = baseForwardSpeed;
         hasSpeedBoost = false;
-        Debug.Log("⚡ Speed Boost tugadi!");
+        OnPowerUpExpired?.Invoke(PowerUpType.SpeedBoost);
     }
 
     private IEnumerator DoubleCoinRoutine(float duration)
     {
         hasDoubleCoin = true;
+        OnPowerUpActivated?.Invoke(PowerUpType.DoubleCoin, duration);
         yield return new WaitForSeconds(duration);
         hasDoubleCoin = false;
-        Debug.Log("💰 Double Coin tugadi!");
+        OnPowerUpExpired?.Invoke(PowerUpType.DoubleCoin);
     }
 
-    /// <summary>
-    /// Obstacle.cs da DoubleCoin holatini tekshirish uchun
-    /// </summary>
     public bool HasDoubleCoin => hasDoubleCoin;
+    public bool HasShield => hasShield;
+    public bool HasSpeedBoost => hasSpeedBoost;
 }

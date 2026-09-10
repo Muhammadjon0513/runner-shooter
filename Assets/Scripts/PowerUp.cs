@@ -35,12 +35,16 @@ public class PowerUp : MonoBehaviour
 
     private void OnTriggerEnter(Collider other)
     {
-        // O'yinchi bilan to'qnashganda
+        // O'yinchi bilan to'qnashganda — inventarga qo'shish
         PlayerController player = other.GetComponent<PlayerController>();
         if (player != null)
         {
-            player.ActivatePowerUp(type);
-            gameObject.SetActive(false); // Pool'ga qaytish
+            // Inventarga qo'shishga urinish
+            if (PowerUpInventory.Instance != null && PowerUpInventory.Instance.AddPowerUp(type))
+            {
+                gameObject.SetActive(false); // Pool'ga qaytish
+            }
+            // Agar inventar to'la — power-up yo'lda qoladi (yig'ilmaydi)
         }
     }
 }
